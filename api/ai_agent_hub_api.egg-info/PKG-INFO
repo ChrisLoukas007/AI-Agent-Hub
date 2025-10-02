@@ -1,0 +1,23 @@
+Metadata-Version: 2.4
+Name: ai-agent-hub-api
+Version: 0.1.0
+Requires-Python: >=3.11
+Requires-Dist: fastapi>=0.115
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: pydantic>=2.8
+Requires-Dist: pydantic-settings>=2.3
+Requires-Dist: httpx>=0.27
+Requires-Dist: sse-starlette>=2.1.0
+Requires-Dist: qdrant-client>=1.10.0
+Requires-Dist: sentence-transformers>=3.0.0
+Requires-Dist: numpy>=1.26
+Requires-Dist: python-dotenv>=1.0.1
+Requires-Dist: tenacity>=8.3.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.3; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23; extra == "dev"
+Requires-Dist: httpx>=0.27; extra == "dev"
+Requires-Dist: ruff>=0.6.9; extra == "dev"
+Requires-Dist: black>=24.8.0; extra == "dev"
+Requires-Dist: mypy>=1.11.0; extra == "dev"
+Requires-Dist: types-requests; extra == "dev"
