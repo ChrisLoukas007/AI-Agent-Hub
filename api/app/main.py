@@ -1,9 +1,3 @@
-# Import AsyncGenerator type for async streaming functions
-from collections.abc import AsyncGenerator
-
-# Import sleep to simulate delays (for mock streaming)
-from time import sleep
-
 # FastAPI is the main web framework for building the API
 from fastapi import FastAPI
 
@@ -15,11 +9,26 @@ from sse_starlette.sse import EventSourceResponse
 
 # Import our configuration settings (ports, model names, etc.)
 from .config import settings
+from .deps import stream_llm
 
 # Import our data models (ChatChunk, ChatRequest) for request/response validation
 from .models.schemas import ChatChunk, ChatRequest, IngestRequest
 from .rag.ingest import ingest_path
 from .rag.search import query_similarity
+
+
+# Build the prompt for the LLM using the question and retrieved context
+def build_prompt(q: str, ctx: list[dict]) -> str:
+    context_block = "\n\n".join([f"- {c['text']}" for c in ctx])
+    return f"""You are a precise assistant. Answer ONLY using the Context below. 
+If the answer isn't in the Context, say "I don’t have enough information."
+
+Context:
+{context_block}
+
+Question: {q}
+Answer:"""
+
 
 # Create the FastAPI app instance
 app = FastAPI(title="AI Agent Hub API", version="0.1.0")
@@ -37,21 +46,16 @@ def health():
     return {"ok": True, "model": settings.llm_model}
 
 
-# Mock function to simulate streaming tokens word-by-word
-def _mock_stream_tokens(text: str):
-    for w in text.split():
-        yield w + " "
-        sleep(0.03)
-
-
-# SSE generator that converts tokens into ChatChunk objects and streams them
-async def _sse_generator(prompt: str) -> AsyncGenerator[str, None]:
-    # For each token from the mock stream
-    for tok in _mock_stream_tokens(f"Echo: {prompt}"):
-        # Convert ChatChunk to JSON and yield it (send to client)
+# Internal function to handle the chat logic and stream responses
+async def _llm_sse(q: str, top_k: int):
+    # 1) Retrieve relevant context from vector DB
+    ctx = query_similarity(q, top_k=top_k or 4)
+    # 2) Build the full prompt with context + question
+    prompt = build_prompt(q, ctx)
+    # 3) Stream the LLM response back to the client
+    async for tok in stream_llm(prompt):
         yield ChatChunk(token=tok).model_dump_json()
-
-    # Signal that streaming is complete by sending final chunk with done=True
+    # 4) Send a final "done" message to tell the client the stream is complete
     yield ChatChunk(token="", done=True).model_dump_json()
 
 
@@ -61,7 +65,7 @@ async def chat(req: ChatRequest):
     # req.q is the user's question from ChatRequest model
     # EventSourceResponse wraps the generator to enable SSE streaming
     # media_type tells the browser this is a Server-Sent Events stream
-    return EventSourceResponse(_sse_generator(req.q), media_type="text/event-stream")
+    return EventSourceResponse(_llm_sse(req.q, req.top_k or 4), media_type="text/event-stream")
 
 
 # Global exception handler - catches any unhandled errors in the API
