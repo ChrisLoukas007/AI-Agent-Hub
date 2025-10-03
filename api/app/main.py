@@ -8,7 +8,7 @@ from time import sleep
 from fastapi import FastAPI
 
 # JSONResponse is used to return JSON error responses
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 # EventSourceResponse enables Server-Sent Events (SSE) for streaming data to client
 from sse_starlette.sse import EventSourceResponse
@@ -17,12 +17,21 @@ from sse_starlette.sse import EventSourceResponse
 from .config import settings
 
 # Import our data models (ChatChunk, ChatRequest) for request/response validation
-from .models.schemas import ChatChunk, ChatRequest
+from .models.schemas import ChatChunk, ChatRequest, IngestRequest
+from .rag.ingest import ingest_path
+from .rag.search import query_similarity
 
+# Create the FastAPI app instance
 app = FastAPI(title="AI Agent Hub API", version="0.1.0")
 
 
-# Health check endpoint - used to verify the API is running
+@app.get("/", include_in_schema=False)
+def root():
+    # Send people to the interactive docs
+    return RedirectResponse(url="/docs")
+
+
+# Health check endpoint
 @app.get("/health")
 def health():
     return {"ok": True, "model": settings.llm_model}
@@ -61,3 +70,22 @@ async def unhandled(_, exc: Exception):
     # Return a 500 error with the exception message as JSON
     # The underscore (_) ignores the request parameter we don't need
     return JSONResponse(status_code=500, content={"error": str(exc)})
+
+
+# Ingest endpoint - accepts a directory path or URL to ingest data from
+@app.post("/ingest")
+def ingest(req: IngestRequest):
+    if not req.path and not req.url:
+        return {"ingested": 0, "detail": "provide path or url"}
+    if req.path:
+        n = ingest_path(req.path)
+        return {"ingested": n}
+    # URL handling omitted for brevity
+    return {"ingested": 0}
+
+
+# quick retrieval helper (useful during dev)
+@app.post("/retrieve")
+def retrieve(req: ChatRequest):
+    hits = query_similarity(req.q, top_k=req.top_k or 4)
+    return {"hits": hits}
