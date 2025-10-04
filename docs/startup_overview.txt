@@ -1,0 +1,4 @@
+The Model Context Protocol (MCP) allows an LLM to interact with external tools in a controlled and standardized way.
+In AI Agent Hub, the MCP server exposes utilities such as Qdrant search, MLflow metric logging, and web content retrieval.
+This enables the LLM to act as an agent that can execute real actions rather than just generate text.
+MCP integration demonstrates advanced AI engineering capabilities.

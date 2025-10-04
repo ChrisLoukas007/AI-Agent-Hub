@@ -1,0 +1,10 @@
+The architecture follows a clean multi-service structure.
+The core services are:
+1. API service (FastAPI) responsible for RAG and streaming responses.
+2. Qdrant vector database used for semantic search and retrieval.
+3. Ollama service running a local LLM model such as llama3.1:8b.
+4. React UI providing the chat interface.
+5. Optional MLflow service used for experiment tracking and evaluation.
+6. Optional MCP server exposing custom tools for the LLM to call.
+
+All services communicate through Docker Compose and can be deployed independently.

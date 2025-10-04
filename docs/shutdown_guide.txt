@@ -1,0 +1,10 @@
+To properly shut down the AI Agent Hub project:
+1. Stop the FastAPI service (Ctrl + C if running locally).
+2. Stop and remove all containers:
+   docker compose down -v
+3. Optionally, remove any persisted volumes:
+   docker volume rm ollama qdrant
+4. To clean all containers manually:
+   docker rm -f $(docker ps -aq)
+5. To restart the project later, run:
+   docker compose up -d --build

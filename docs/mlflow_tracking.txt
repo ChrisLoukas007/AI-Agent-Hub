@@ -1,0 +1,9 @@
+MLflow is used for tracking metrics, parameters, and experiment results.
+In this project, it logs:
+- Latency of responses
+- Number of retrieved documents
+- Token usage
+- Retrieval scores
+- Hallucination flags (optional)
+
+You can view MLflow UI by visiting http://localhost:5000 after running the MLflow container.

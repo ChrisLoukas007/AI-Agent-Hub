@@ -1,0 +1,4 @@
+AI Agent Hub is a modular project designed to demonstrate the skills of a junior AI engineer.
+It combines modern AI components such as a FastAPI backend, Ollama LLM, Qdrant vector database, MLflow experiment tracking, and an MCP server for tool integration.
+The system runs fully containerized using Docker and supports both local and cloud deployments.
+Its main purpose is to show how an engineer can design, build, and deploy a production-ready RAG-based assistant.

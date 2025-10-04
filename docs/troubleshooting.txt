@@ -1,0 +1,6 @@
+Common troubleshooting tips:
+- If Qdrant refuses connection, check that the port 6333 is open and container is running.
+- If the API returns empty results, ensure you ingested text files into Qdrant.
+- If Ollama fails to respond, pull the model manually using docker exec -it ollama ollama pull llama3.1:8b
+- For permission errors in Docker, use sudo or fix user group permissions.
+- Always check logs with docker compose logs -f

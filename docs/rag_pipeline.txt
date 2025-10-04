@@ -1,0 +1,6 @@
+The RAG pipeline works in three stages:
+1. Embedding: Each document is transformed into numerical embeddings using a SentenceTransformer model.
+2. Retrieval: Qdrant stores the vectors and retrieves the top-k most similar chunks for a query.
+3. Generation: The retrieved context is passed to the LLM (Ollama) which generates a grounded answer.
+
+If no relevant context is found in Qdrant, the LLM answers based on its internal knowledge only.

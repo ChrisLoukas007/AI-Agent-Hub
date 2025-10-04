@@ -1,0 +1,5 @@
+The ingestion process reads text or markdown files, splits them into small chunks, embeds them, and inserts the vectors into Qdrant.
+To ingest a folder, run the following API call:
+curl -X POST http://localhost:8000/ingest -H "Content-Type: application/json" -d '{"path":"./docs"}'
+
+After ingestion, you can query the system and check if the retrieved results include the ingested documents.

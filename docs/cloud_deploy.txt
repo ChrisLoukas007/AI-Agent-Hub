@@ -1,0 +1,7 @@
+The project supports cloud deployment using Google Cloud Run free tier.
+Steps:
+1. Build Docker images locally or via GitHub Actions.
+2. Push images to Google Container Registry.
+3. Deploy API and UI as separate Cloud Run services.
+4. Configure environment variables to connect with Qdrant Cloud and MLflow.
+5. Verify by calling the /health endpoint on the deployed service.
