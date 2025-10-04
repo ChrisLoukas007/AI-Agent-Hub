@@ -1,3 +1,5 @@
+# Finds and reads .txt files from a directory and ingests their contents into the vector database
+
 from pathlib import Path
 
 from .search import upsert_texts

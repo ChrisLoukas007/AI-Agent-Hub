@@ -1,3 +1,4 @@
+# Turns texts into embedding vectors using a pre-trained model
 from functools import lru_cache
 
 import numpy as np

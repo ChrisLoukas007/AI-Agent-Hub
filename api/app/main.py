@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 
 # JSONResponse is used to return JSON error responses
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 
 # EventSourceResponse enables Server-Sent Events (SSE) for streaming data to client
 from sse_starlette.sse import EventSourceResponse
@@ -66,14 +66,6 @@ async def chat(req: ChatRequest):
     # EventSourceResponse wraps the generator to enable SSE streaming
     # media_type tells the browser this is a Server-Sent Events stream
     return EventSourceResponse(_llm_sse(req.q, req.top_k or 4), media_type="text/event-stream")
-
-
-# Global exception handler - catches any unhandled errors in the API
-@app.exception_handler(Exception)
-async def unhandled(_, exc: Exception):
-    # Return a 500 error with the exception message as JSON
-    # The underscore (_) ignores the request parameter we don't need
-    return JSONResponse(status_code=500, content={"error": str(exc)})
 
 
 # Ingest endpoint - accepts a directory path or URL to ingest data from

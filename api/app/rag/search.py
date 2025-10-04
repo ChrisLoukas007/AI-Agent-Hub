@@ -1,3 +1,5 @@
+# Talks to Qdrant vector database to store and search text embeddings
+
 # Import Qdrant client and models for vector database operations
 import uuid
 

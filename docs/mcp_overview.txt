@@ -1,0 +1,10 @@
+To start the AI Agent Hub project:
+1. Ensure Docker is running.
+2. Pull the necessary images:
+   docker compose pull
+3. Start all services:
+   docker compose up -d
+4. Access the API at http://localhost:8000/health
+5. Access the UI at http://localhost:5173
+6. Use the Ollama container to pull the LLM model if missing:
+   docker exec -it ollama ollama pull llama3.1:8b
