@@ -1,5 +1,7 @@
 # FastAPI is the main web framework for building the API
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # JSONResponse is used to return JSON error responses
 from fastapi.responses import RedirectResponse
@@ -16,6 +18,18 @@ from .models.schemas import ChatChunk, ChatRequest, IngestRequest
 from .rag.ingest import ingest_path
 from .rag.search import query_similarity
 
+# Create the FastAPI app instance
+app = FastAPI(title="AI Agent Hub API", version="0.1.0")
+
+# Set up CORS middleware to allow cross-origin requests (adjust in production)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # tighten in prod
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Build the prompt for the LLM using the question and retrieved context
 def build_prompt(q: str, ctx: list[dict]) -> str:
@@ -28,10 +42,6 @@ Context:
 
 Question: {q}
 Answer:"""
-
-
-# Create the FastAPI app instance
-app = FastAPI(title="AI Agent Hub API", version="0.1.0")
 
 
 @app.get("/", include_in_schema=False)
