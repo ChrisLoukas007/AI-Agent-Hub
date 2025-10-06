@@ -25,7 +25,10 @@ export async function retrieve(q: string, topK = 4): Promise<SourceHit[]> {
 export async function* streamChat(q: string, topK = 4): AsyncGenerator<string> {
   const r = await fetch(`${API_BASE}/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "text/event-stream", // <-- helps some proxies
+    },
     body: JSON.stringify({ q, top_k: topK }),
   });
   if (!r.ok || !r.body) throw new Error(`/chat failed: ${r.status}`);
@@ -34,38 +37,65 @@ export async function* streamChat(q: string, topK = 4): AsyncGenerator<string> {
   const decoder = new TextDecoder();
   let buf = "";
 
+  // Parse one SSE frame (between blank lines)
+  const parseFrame = (frame: string) => {
+    // Ignore comments/heartbeats (lines starting with ":")
+    const lines = frame
+      .split(/\r?\n/)
+      .filter((l) => l.trim() && !l.startsWith(":"));
+
+    let event = "message";
+    let data = "";
+
+    for (const line of lines) {
+      if (line.startsWith("event:")) {
+        event = line.slice(6).trim();
+      } else if (line.startsWith("data:")) {
+        // Multiple data lines are concatenated with \n per SSE spec
+        data += (data ? "\n" : "") + line.slice(5).trim();
+      }
+    }
+    return { event, data };
+  };
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
     buf += decoder.decode(value, { stream: true });
 
-    // Split on SSE event delimiters
-    const parts = buf.split("\n\n");
-    buf = parts.pop() || "";
+    // Split on blank line delimiter between events
+    const frames = buf.split(/\r?\n\r?\n/);
+    buf = frames.pop() || ""; // keep partial event in buffer
 
-    for (const part of parts) {
-      // Expect "data: {json}"
-      const line = part.split("\n").find((l) => l.startsWith("data:"));
-      if (!line) continue;
-      const jsonStr = line.slice(5).trim();
-      if (!jsonStr) continue;
+    for (const f of frames) {
+      const { event, data } = parseFrame(f);
+      if (!data) continue;
+
+      // Your server sends JSON: {"token":"...","done":false}
+      let payload: any;
       try {
-        const chunk = JSON.parse(jsonStr);
-        if (chunk?.token) yield chunk.token as string;
-        if (chunk?.done) return;
+        payload = JSON.parse(data);
       } catch {
-        // ignore parse glitches
+        // Fallback if someone sends plain text
+        payload = { token: data };
+      }
+
+      if (event === "token" || typeof payload.token === "string") {
+        yield payload.token as string;
+      }
+      if (event === "done" || payload.done === true) {
+        return;
       }
     }
   }
 
-  // flush remainder if any (usually empty)
-  if (buf.length) {
-    const line = buf.split("\n").find((l) => l.startsWith("data:"));
-    if (line) {
+  // Optional: flush any trailing partial (rare)
+  if (buf) {
+    const { event, data } = parseFrame(buf);
+    if (data) {
       try {
-        const chunk = JSON.parse(line.slice(5).trim());
-        if (chunk?.token) yield chunk.token as string;
+        const payload = JSON.parse(data);
+        if (event === "token" && payload?.token) yield payload.token;
       } catch {}
     }
   }

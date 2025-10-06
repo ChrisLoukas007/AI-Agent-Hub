@@ -14,26 +14,31 @@ export default function App() {
         <span className="muted">RAG + Streaming</span>
       </header>
 
-      <main className="grid">
-        <div className="col">
+      <main className="stack">
+        <section className="col">
           <Chat
             onSources={(h, loading) => {
               setHits(h);
               setLoadingSources(loading);
             }}
           />
-        </div>
-        <aside className="col narrow">
-          <Sources hits={hits} loading={loadingSources} />
-        </aside>
+          <div className="below">
+            <Sources hits={hits} loading={loadingSources} />
+          </div>
+        </section>
       </main>
 
       <footer className="footer">
         <span className="muted">
-          API:{" "}
-          <code>
-            {import.meta.env.VITE_API_BASE || "http://localhost:8000"}
-          </code>
+          Created by ChrisLoukas 007 &nbsp;
+          <a
+            href="https://github.com/ChrisLoukas007/AI-Agent-Hub"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#0070f3", textDecoration: "underline" }}
+          >
+            GitHub
+          </a>
         </span>
       </footer>
     </div>
